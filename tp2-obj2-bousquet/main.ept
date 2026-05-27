@@ -1,0 +1,23 @@
+open Extern (* declaration of external functions *)
+
+const addr_hs:int = 0x2000 (* global constant *)
+
+node hs_handler(hs:bool) returns (id:int) 
+let
+  if hs then 
+    id = g() ;
+  else
+    var x,y : int; in
+    y = 15 fby x ;
+    id = f1(y) ;
+    x = f2(id) ;
+end ;
+tel
+
+node main () returns () 
+var hs : bool ; id : int ;
+let 
+  hs = read_bool(addr_hs) ;
+  id = hs_handler(hs) ;
+  () = act(id) ;
+tel

@@ -1,0 +1,5 @@
+fun read_bool(addr:int) returns (value:bool)
+fun f1 (i:int) returns (o:int)
+fun f2 (i:int) returns (o:int)
+fun g () returns (o:int)
+fun act (i:int) returns ()
