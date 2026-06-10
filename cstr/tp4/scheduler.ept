@@ -1,0 +1,104 @@
+open Scheduler_data
+open Extern
+
+
+const tattr : task_attributes^ntasks =
+[{ period=5; capacity=2; deadline=5; first_start=0 },
+{ period=7; capacity=2; deadline=7; first_start=3 }]
+
+const init_sstate : scheduler_state =
+{ current_date = -1 ;
+tasks =
+{status=Waiting;current_deadline=0;left=0}^2 }
+
+fun simulate(tsi:task_status) returns (o:task_status)
+let
+o =
+if tsi.status = Running then
+if tsi.left <=1 then
+(* Normal termination, move to Waiting state *)
+{ tsi with .status = Waiting }
+else
+(* No termination, yet *)
+{ status = Ready;
+current_deadline = tsi.current_deadline ;
+left = tsi.left - 1 }
+else tsi
+tel
+
+fun check_deadline(current_date:int; tsi:task_status; tid:int)
+returns (tso:task_status)
+var c: bool ;
+let
+c = (tsi.status = Ready)
+and (tsi.current_deadline = current_date) ;
+() = deadline_miss_log(current_date when c, tid when c) ;
+tso = if c then { tsi with .status = Waiting} else tsi ;
+tel
+
+fun start_inst(current_date:int;tsi:task_status; ta:task_attributes) returns (tso:task_status)
+var c : bool ;
+let
+	c = (current_date-ta.first_start)%ta.period = 0 ;
+	tso = merge c
+	(true ->
+	{ status = Ready;
+	current_deadline =
+	(current_date when c) + (ta.deadline when c);
+	left = (ta.capacity when c) })
+	(false -> tsi whenot c)
+tel
+
+fun select_aux(ts:task_status; ta:task_attributes; tid:int;
+acc:select_acc) returns (acc_o:select_acc)
+let
+acc_o =
+if (ts.status = Ready) and (ta.period < acc.speriod) then
+{ tid = tid; speriod = ta.period }
+else acc
+tel
+
+fun select_one_task(ts:task_status^ntasks) returns(selected:int)
+var tmp : select_acc ;
+let
+tmp = foldi<<ntasks>> select_aux
+(ts,tattr,{ tid = ntasks; speriod = 6700000 }) ;
+selected = tmp.tid ;
+tel
+
+fun update_selected(ts:task_status;selected:int;tid:int)
+returns (tso:task_status)
+let
+tso = if tid = selected then { ts with .status = Running }
+else ts
+tel
+
+fun rate_monotonic(ts:task_status^ntasks)
+returns (tso:task_status^ntasks)
+var selected : int ;
+let
+selected = select_one_task(ts) ;
+tso = mapi<<ntasks>> update_selected (ts, selected^ntasks) ;
+tel
+
+
+fun scheduler(si:scheduler_state) returns (so:scheduler_state)
+var new_date : int ;
+tmp1,tmp2,tmp3,fin: task_status^ntasks ;
+let
+new_date = si.current_date + 1 ; (* advance time by 1 *)
+tmp1 = map <<ntasks>> simulate (si.tasks) ;
+tmp2 = mapi<<ntasks>> check_deadline (new_date^ntasks,tmp1);
+tmp3 = map <<ntasks>> start_inst (new_date^ntasks,tmp2,tattr);
+fin = rate_monotonic(tmp3) ; (* scheduling policy *)
+so = { current_date = new_date; tasks = fin }
+tel
+
+
+node main() returns ()
+var sstate, new_sstate : scheduler_state ;
+let
+new_sstate = scheduler(sstate) ;
+sstate = init_sstate fby new_sstate ;
+() = print_scheduler_state(new_sstate) ;
+tel
