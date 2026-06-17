@@ -1,10 +1,11 @@
 open Scheduler_data
 open Extern
 
+const int_max : int = 0x7FFFFFFF
 
 const tattr : task_attributes^ntasks =
 [{ period=5; capacity=2; deadline=5; first_start=0 },
-{ period=7; capacity=2; deadline=7; first_start=3 }]
+{ period=7; capacity=4; deadline=7; first_start=3 }]
 
 const init_sstate : scheduler_state =
 { current_date = -1 ;
@@ -62,7 +63,7 @@ fun select_one_task(ts:task_status^ntasks) returns(selected:int)
 var tmp : select_acc ;
 let
 tmp = foldi<<ntasks>> select_aux
-(ts,tattr,{ tid = ntasks; speriod = 6700000 }) ;
+(ts,tattr,{ tid = ntasks; speriod = int_max }) ;
 selected = tmp.tid ;
 tel
 

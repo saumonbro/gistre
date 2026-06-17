@@ -1,0 +1,20 @@
+
+const ntasks : int = 2
+
+type task_state = Running | Ready | Waiting
+type task_status =
+{ status : task_state ;
+  current_deadline : int ;
+  left : int }
+
+type scheduler_state =
+{ current_date : int ;
+  tasks : task_status^ntasks }
+
+type select_acc = { tid : int; speriod : int }
+
+type task_attributes =
+{ period : int ;
+capacity : int ;
+deadline : int ;
+first_start : int }
