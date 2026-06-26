@@ -54,7 +54,7 @@ fun select_aux(ts:task_status; ta:task_attributes; tid:int;
 acc:select_acc) returns (acc_o:select_acc)
 let
 acc_o =
-if (ts.status = Ready) and (ts.current_deadline < acc.sdeadline) then
+if (ts.status = Ready) and (ts.current_deadline <= acc.sdeadline) then
 { tid = tid; sdeadline = ts.current_deadline }
 else acc
 tel
