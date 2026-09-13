@@ -1,0 +1,46 @@
+1. La philosophie evoquee dans l;echange entre Linus Torvalds et Maura Chehab est la regle "Do not break userspace".
+
+Cette regle fait reference a la separation entre le kernel space, et le user space. Les deux termes sont ici employes de maniere generale pour evoquer l'ensemble des interfaces et 
+
+Le terme "user space" ne se limite donc pas ici a une difference de region memoire, et correspond a l'ensemble des programmes executes par les utilisateurs du kernel linux.
+
+Elle indique qu'une mise a jour du kernel ne doit jamais causer le dysfonctionnement d'un programme et doit garantir la retro-compatibilite de son interface.
+
+
+
+Cette regle est selon les mots de Linus Torvalds la seule regle d'or du developpement du kernel.
+
+
+2.
+
+On utilise l'option `-c` (summary-only) de strace pour generer un rapport d'execution:
+
+42sh$ strace -c ./straceme
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 99,00    0,189924          18     10493           sync
+  0,56    0,001068           2       490       488 newfstatat
+  0,26    0,000491         122         4           getdents64
+  0,10    0,000187         187         1           execve
+  0,03    0,000056           9         6         1 openat
+  0,01    0,000025          25         1           readlinkat
+  0,01    0,000019           3         5           brk
+  0,01    0,000012          12         1           mprotect
+  0,01    0,000011           2         5         1 read
+  0,01    0,000010           2         5           fstat
+  0,00    0,000009           4         2           getrandom
+  0,00    0,000008           2         3           close
+  0,00    0,000005           2         2           uname
+  0,00    0,000003           1         2           lseek
+  0,00    0,000003           3         1           set_robust_list
+  0,00    0,000003           3         1           rseq
+  0,00    0,000002           2         1           getgid
+  0,00    0,000002           2         1           arch_prctl
+  0,00    0,000002           2         1           set_tid_address
+  0,00    0,000002           2         1           prlimit64
+------ ----------- ----------- --------- --------- ----------------
+100,00    0,191842          17     11026       490 total
+
+C'est ici le syscall `sync` qui est appelé 10493 fois.
+
+3. 
